@@ -34,7 +34,7 @@ public enum WBXMLNode: Sendable {
   case processingInstruction(WBXMLProcessingInstruction)
 
   /// Raw opaque bytes (`OPAQUE`).
-  case opaque(ContiguousArray<UInt8>)
+  case opaque([ UInt8 ])
 }
 
 extension WBXMLNode: Equatable {

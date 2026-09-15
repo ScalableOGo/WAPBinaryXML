@@ -51,12 +51,21 @@ extension WBXMLEncoder {
       count += 1
     }
 
-    mutating func append(contentsOf data: ContiguousArray<UInt8>) throws {
+    mutating func append(contentsOf data: [ UInt8 ]) throws {
+      if #available(macOS 26, iOS 26, tvOS 26, watchOS 26, visionOS 26, *) {
+        try append(contentsOf: data.span)
+      }
+      else {
+        try data.withUnsafeBufferPointer { try append(contentsOf: $0.span) }
+      }
+    }
+
+    mutating func append(contentsOf data: Span<UInt8>) throws {
       guard count <= maximumBytes, data.count <= maximumBytes - count else {
         throw WBXMLError.resourceLimitExceeded(.documentBytes)
       }
 
-      destination.append(contentsOf: data.span)
+      destination.append(contentsOf: data)
       count += data.count
     }
 

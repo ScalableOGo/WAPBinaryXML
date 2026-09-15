@@ -195,7 +195,7 @@ private extension WBXMLDecoder {
   }
 
   func readOpaque(_ bytes: Span<UInt8>, state: inout ParserState)
-    throws -> ContiguousArray<UInt8>
+    throws -> [ UInt8 ]
   {
     let lengthValue = try state.cursor.readMBUInt32(bytes)
     guard let length = Int(exactly: lengthValue) else {

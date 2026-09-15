@@ -29,7 +29,7 @@ extension WBXMLDecoder {
     }
 
     mutating func readBytes(_ count: Int, _ bytes: Span<UInt8>)
-      throws -> ContiguousArray<UInt8>
+      throws -> [ UInt8 ]
     {
       guard count >= 0, offset >= 0, offset <= bytes.count,
             count <= bytes.count - offset else
@@ -38,7 +38,7 @@ extension WBXMLDecoder {
       }
       let end = offset + count
       let slice = bytes.extracting(offset ..< end)
-      let result = slice.withUnsafeBufferPointer { ContiguousArray<UInt8>($0) }
+      let result = slice.withUnsafeBufferPointer { Array($0) }
       offset = end
       return result
     }

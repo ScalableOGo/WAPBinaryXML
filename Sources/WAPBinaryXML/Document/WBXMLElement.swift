@@ -156,9 +156,9 @@ public extension WBXMLElement {
     }
   }
 
-  /// First opaque child's contiguous byte storage, or nil.
+  /// First opaque child's bytes, or nil.
   @inlinable
-  var opaqueValue: ContiguousArray<UInt8>? {
+  var opaqueValue: [ UInt8 ]? {
     for child in children {
       if case .opaque(let data) = child { return data }
     }

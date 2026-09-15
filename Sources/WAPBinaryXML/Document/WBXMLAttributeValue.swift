@@ -31,7 +31,7 @@ public enum WBXMLAttributeValue: Sendable {
   case token(String, page: UInt8? = nil)
 
   /// Raw opaque attribute data (`OPAQUE`).
-  case opaque(ContiguousArray<UInt8>)
+  case opaque([ UInt8 ])
 }
 
 public extension WBXMLAttributeValue {

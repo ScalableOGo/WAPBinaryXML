@@ -152,7 +152,7 @@ public enum WBXMLBuilder {
 
     /// Add opaque binary data.
     @inlinable
-    public mutating func opaque(_ data: ContiguousArray<UInt8>) {
+    public mutating func opaque(_ data: [ UInt8 ]) {
       nodes.append(.opaque(data))
     }
   }

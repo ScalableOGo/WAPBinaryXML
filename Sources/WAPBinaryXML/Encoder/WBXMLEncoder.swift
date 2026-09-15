@@ -105,7 +105,7 @@ extension WBXMLEncoder {
 
     try output.appendMBUInt32(charset.rawValue)
     try output.appendMBUInt32(try stringTable.length())
-    try output.append(contentsOf: stringTable.bytes)
+    try output.append(contentsOf: stringTable.bytes.span)
 
     var pages = EncodingPages()
     for instruction in document.processingInstructionsBeforeRoot {
