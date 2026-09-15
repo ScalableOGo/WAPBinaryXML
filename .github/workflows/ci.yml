@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+      - main
+    tags:
+      - "*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Linux / Swift ${{ matrix.swift }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        swift:
+          - "6.2"
+          # - "6.3"
+    container:
+      image: swift:${{ matrix.swift }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Show Swift version
+        run: swift --version
+      - name: Run debug tests
+        run: swift test -Xswiftc -warnings-as-errors
+      - name: Run release tests
+        run: swift test -c release -Xswiftc -warnings-as-errors
+
+  NeXTstep:
+    name: macOS / current Xcode
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Show Swift version
+        run: swift --version
+      - name: Run debug tests
+        run: swift test -Xswiftc -warnings-as-errors
+      - name: Run release tests
+        run: swift test -c release -Xswiftc -warnings-as-errors
+
+  apple-platforms:
+    name: ${{ matrix.platform }} / current Xcode
+    runs-on: macos-26
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ iOS, tvOS, watchOS, visionOS ]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Ensure simulator platform is installed
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: xcodebuild -downloadPlatform "$PLATFORM"
+      - name: Build for simulator
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: >-
+          xcodebuild build
+          -scheme WAPBinaryXML
+          -destination "generic/platform=$PLATFORM Simulator"
+          -configuration Release
+          CODE_SIGNING_ALLOWED=NO
+          SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
