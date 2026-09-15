@@ -96,9 +96,10 @@ extension WBXMLEncoder {
     return resolved
   }
 
-  func switchTagPage(to requestedPage: UInt8?,
-                     into output: inout EncodingBuffer,
-                     pages: inout EncodingPages) throws
+  func switchTagPage<O>(to requestedPage: UInt8?,
+                        into output: inout EncodingBuffer<O>,
+                        pages: inout EncodingPages) throws
+    where O: Output
   {
     guard let requestedPage, requestedPage != pages.tag else { return }
     try output.append(Self.switchPage)
@@ -106,9 +107,10 @@ extension WBXMLEncoder {
     pages.tag = requestedPage
   }
 
-  func switchAttributePage(to requestedPage: UInt8?,
-                           into output: inout EncodingBuffer,
-                           pages: inout EncodingPages) throws
+  func switchAttributePage<O>(to requestedPage: UInt8?,
+                              into output: inout EncodingBuffer<O>,
+                              pages: inout EncodingPages) throws
+    where O: Output
   {
     guard let requestedPage, requestedPage != pages.attribute else { return }
     try output.append(Self.switchPage)

@@ -28,9 +28,52 @@ public struct WBXMLEncoder: Sendable {
     self.limits    = limits
   }
 
-  /// Encode a full document to WBXML binary.
-  public func encode(_ document: WBXMLDocument) throws -> ContiguousArray<UInt8>
+  public func encode<C>(_ document: WBXMLDocument, into bytes: inout C)
+    throws where C: RangeReplaceableCollection, C.Element == UInt8
   {
+    var output = CollectionOutput(bytes: consume bytes)
+    defer { bytes = output.bytes }
+    try encode(document, to: &output)
+  }
+
+  @inlinable
+  public func encode<C>(_ root: WBXMLElement, into bytes: inout C)
+    throws where C: RangeReplaceableCollection, C.Element == UInt8
+  {
+    try encode(WBXMLDocument(root: root), into: &bytes)
+  }
+
+  @inlinable
+  public func encode<O: Output>(_ root: WBXMLElement, to output: inout O) throws
+  {
+    try encode(WBXMLDocument(root: root), to: &output)
+  }
+}
+
+// MARK: - Document Encoding
+
+extension WBXMLEncoder {
+
+  /**
+   * Append a document to a custom output buffer.
+   *
+   * Limits apply only to the appended document. On failure, appended bytes are
+   * removed with `truncate(to:)`, preserving the destination's original bytes.
+   */
+  public func encode<O: Output>(_ document: WBXMLDocument,
+                                to destination: inout O) throws
+  {
+    let prefixCount = destination.count
+    var output = EncodingBuffer(maximumBytes: limits.maximumDocumentBytes,
+                                destination: consume destination)
+    var succeeded = false
+    defer { destination = output.destination }
+    defer {
+      if !succeeded, output.count > 0 {
+        output.destination.truncate(to: prefixCount)
+      }
+    }
+
     guard document.version == 0x03 else {
       throw WBXMLError.unsupportedVersion(document.version)
     }
@@ -47,7 +90,6 @@ public struct WBXMLEncoder: Sendable {
 
     try preflight(document, stringTable: &stringTable, tracker: &tracker)
 
-    var output = EncodingBuffer(maximumBytes: limits.maximumDocumentBytes)
     try output.append(document.version)
 
     switch document.publicIdentifier {
@@ -79,13 +121,7 @@ public struct WBXMLEncoder: Sendable {
                    charset: charset, into: &output, pages: &pages)
     }
 
-    return output.bytes
-  }
-
-  /// Encode a root element with the default WBXML header.
-  @inlinable
-  public func encode(_ root: WBXMLElement) throws -> ContiguousArray<UInt8> {
-    try encode(WBXMLDocument(root: root))
+    succeeded = true
   }
 }
 
@@ -112,8 +148,10 @@ extension WBXMLEncoder {
 
 extension WBXMLEncoder {
 
-  func encodeInlineString(_ value: String, token: UInt8, charset: WBXMLCharset,
-                          into output: inout EncodingBuffer) throws
+  func encodeInlineString<O>(_ value: String, token: UInt8,
+                             charset: WBXMLCharset,
+                             into output: inout EncodingBuffer<O>) throws
+    where O: Output
   {
     try output.append(token)
     try output.appendTerminated(value, charset: charset)

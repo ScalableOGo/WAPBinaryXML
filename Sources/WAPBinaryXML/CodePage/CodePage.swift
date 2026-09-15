@@ -58,7 +58,8 @@ public struct WBXMLCodePage: Sendable {
 
     for ( token, name ) in tokens {
       let reference = TokenReference(page: page, token: token)
-      let nameKey = WBXMLExactStringKey(name)
+      let nameKey   = WBXMLExactStringKey(name)
+      
       if !Self.isValidTagToken(token) {
         errors.append(.invalidTagToken(reference))
       }

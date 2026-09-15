@@ -8,10 +8,11 @@
 
 extension WBXMLEncoder {
 
-  func encodeElement(_ element: WBXMLElement, depth: Int,
-                     stringTable: StringTableBuilder, charset: WBXMLCharset,
-                     into output: inout EncodingBuffer,
-                     pages: inout EncodingPages) throws
+  func encodeElement<O>(_ element: WBXMLElement, depth: Int,
+                        stringTable: StringTableBuilder, charset: WBXMLCharset,
+                        into output: inout EncodingBuffer<O>,
+                        pages: inout EncodingPages) throws
+    where O: Output
   {
     try encodeElementStart(element, depth: depth, stringTable: stringTable,
                            charset: charset, into: &output, pages: &pages)
@@ -34,11 +35,12 @@ extension WBXMLEncoder {
     }
   }
 
-  func encodeElementStart(_ element: WBXMLElement, depth: Int,
-                          stringTable: StringTableBuilder,
-                          charset: WBXMLCharset,
-                          into output: inout EncodingBuffer,
-                          pages: inout EncodingPages) throws
+  func encodeElementStart<O>(_ element: WBXMLElement, depth: Int,
+                             stringTable: StringTableBuilder,
+                             charset: WBXMLCharset,
+                             into output: inout EncodingBuffer<O>,
+                             pages: inout EncodingPages) throws
+    where O: Output
   {
     try checkDepth(depth)
     let hasAttributes = !element.attributes.isEmpty
@@ -65,10 +67,11 @@ extension WBXMLEncoder {
     }
   }
 
-  func encodeNode(_ node: WBXMLNode, depth: Int,
-                  stringTable: StringTableBuilder, charset: WBXMLCharset,
-                  into output: inout EncodingBuffer,
-                  pages: inout EncodingPages) throws
+  func encodeNode<O>(_ node: WBXMLNode, depth: Int,
+                     stringTable: StringTableBuilder, charset: WBXMLCharset,
+                     into output: inout EncodingBuffer<O>,
+                     pages: inout EncodingPages) throws
+    where O: Output
   {
     switch node {
       case .element(let element):
@@ -111,10 +114,11 @@ extension WBXMLEncoder {
     }
   }
 
-  func encodePI(_ instruction: WBXMLProcessingInstruction,
-                stringTable: StringTableBuilder, charset: WBXMLCharset,
-                into output: inout EncodingBuffer,
-                pages: inout EncodingPages) throws
+  func encodePI<O>(_ instruction: WBXMLProcessingInstruction,
+                   stringTable: StringTableBuilder, charset: WBXMLCharset,
+                   into output: inout EncodingBuffer<O>,
+                   pages: inout EncodingPages) throws
+    where O: Output
   {
     try output.append(Self.pi)
     try encodeAttributes([ instruction.attribute ], stringTable: stringTable,
@@ -127,11 +131,13 @@ extension WBXMLEncoder {
 
 extension WBXMLEncoder {
 
-  func encodeAttributes(_ attributes: [ WBXMLAttribute ],
-                        stringTable: StringTableBuilder, charset: WBXMLCharset,
-                        emitExplicitEmptyValue: Bool = true,
-                        into output: inout EncodingBuffer,
-                        pages: inout EncodingPages) throws
+  func encodeAttributes<O>(_ attributes: [ WBXMLAttribute ],
+                           stringTable: StringTableBuilder,
+                           charset: WBXMLCharset,
+                           emitExplicitEmptyValue: Bool = true,
+                           into output: inout EncodingBuffer<O>,
+                           pages: inout EncodingPages) throws
+    where O: Output
   {
     for attribute in attributes {
       if attribute.literal {
@@ -163,11 +169,12 @@ extension WBXMLEncoder {
     try output.append(Self.end)
   }
 
-  func encodeAttributeValue(_ value: WBXMLAttributeValue,
-                            stringTable: StringTableBuilder,
-                            charset: WBXMLCharset,
-                            into output: inout EncodingBuffer,
-                            pages: inout EncodingPages) throws
+  func encodeAttributeValue<O>(_ value: WBXMLAttributeValue,
+                               stringTable: StringTableBuilder,
+                               charset: WBXMLCharset,
+                               into output: inout EncodingBuffer<O>,
+                               pages: inout EncodingPages) throws
+    where O: Output
   {
     switch value {
       case .text(let string):
