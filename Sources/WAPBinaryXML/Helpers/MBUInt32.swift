@@ -15,6 +15,38 @@
  */
 public enum MBUInt32 {
 
+  /**
+   * Decode a multi-byte uint32 from the start of `buf`.
+   *
+   * - Returns: The decoded value and the number of bytes consumed.
+   * - Throws:  `WBXMLError.invalidMBUInt32` if the value exceeds 32 bits or 5
+   *            bytes, or `WBXMLError.unexpectedEnd` if data runs out.
+   */
+  @inlinable
+  public static func decode(_ buf: Span<UInt8>)
+    throws -> ( value: UInt32, count: Int )
+  {
+    var result   : UInt32 = 0
+    var consumed = 0
+
+    while true {
+      guard consumed < buf.count else { throw WBXMLError.unexpectedEnd }
+      
+      let byte = buf[consumed]
+      consumed += 1
+
+      if consumed == 5 {
+        guard result <= UInt32.max >> 7, byte & 0x80 == 0 else {
+          throw WBXMLError.invalidMBUInt32
+        }
+      }
+      result = (result << 7) | UInt32(byte & 0x7F)
+
+      if byte & 0x80 == 0 { break }
+    }
+    return ( result, consumed )
+  }
+
   /// Append the multi-byte encoding of `value` to `buf`.
   @inlinable
   public static func encode<C>(_ value: UInt32, into buf: inout C)

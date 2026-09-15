@@ -9,6 +9,30 @@
 /// Errors thrown during WBXML encoding or decoding.
 public enum WBXMLError: Error, Equatable, Sendable {
 
+  /// Input ended before the current construct was complete.
+  case unexpectedEnd
+
+  /// A multi-byte unsigned integer was malformed or overflowed.
+  case invalidMBUInt32
+
+  /// An application token had no definition on its active page.
+  case unknownToken(WBXMLCodePage.TokenReference)
+
+  /// A token was not valid in its current context.
+  case invalidToken(WBXMLCodePage.TokenReference)
+
+  /// A global token appeared in a context that does not permit it.
+  case unexpectedGlobalToken(UInt8)
+
+  /// An `END` token appeared without a matching open construct.
+  case unmatchedEnd
+
+  /// Bytes remained after the document and trailing instructions.
+  case trailingData
+
+  /// The document did not contain a root element.
+  case missingRoot
+
   /// A string payload was not valid UTF-8.
   case invalidUTF8
 
@@ -27,7 +51,7 @@ public enum WBXMLError: Error, Equatable, Sendable {
   /// A string-table reference did not identify a table string.
   case invalidStringTableOffset(Int)
 
-  /// A payload length or string-table offset exceeded `UInt32`.
+  /// A length or offset exceeded the wire or platform integer range.
   case lengthOverflow
 
   /// The WBXML version is not supported by this codec.
