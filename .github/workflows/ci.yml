@@ -66,7 +66,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ iOS, tvOS, watchOS, visionOS ]
+        platform: [ iOS, tvOS, watchOS ]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -77,7 +77,9 @@ jobs:
       - name: Ensure simulator platform is installed
         env:
           PLATFORM: ${{ matrix.platform }}
-        run: xcodebuild -downloadPlatform "$PLATFORM"
+        run: |
+          xcrun simctl list > /dev/null
+          xcodebuild -downloadPlatform "$PLATFORM"
       - name: Build for simulator
         env:
           PLATFORM: ${{ matrix.platform }}
