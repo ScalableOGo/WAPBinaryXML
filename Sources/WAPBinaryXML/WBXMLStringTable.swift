@@ -6,9 +6,7 @@
 //  Copyright © 2026 ZeeZide GmbH. All rights reserved.
 //
 
-/**
- * An immutable string table retaining its original byte offsets and charset.
- */
+/// An immutable string table retaining its original byte offsets and charset.
 public struct WBXMLStringTable: Sendable {
 
   /// Original, null-terminated string bytes.
@@ -31,8 +29,7 @@ public struct WBXMLStringTable: Sendable {
     var offset = 0
     while offset < bytes.count {
       let end = try terminatedEnd(at: offset)
-      let string = try WBXMLCharset.decode(bytes[offset ..< end],
-                                           charset: charset.rawValue)
+      let string = try charset.decode(bytes[offset..<end])
       let key = WBXMLExactStringKey(string)
       if offsets[key] == nil { offsets[key] = UInt32(offset) }
 
@@ -50,8 +47,7 @@ public struct WBXMLStringTable: Sendable {
         throw WBXMLError.invalidStringTableOffset(offset)
       }
       let end = try terminatedEnd(at: offset)
-      return try WBXMLCharset
-                   .decode(bytes[offset..<end], charset: charset.rawValue)
+      return try charset.decode(bytes[offset..<end])
     }
   }
 
